@@ -6,6 +6,8 @@ module.exports = function(app) {
 
 	//GET - Return all Elements in DBs
 	_findAll = function(req,res){
+		res.header("Access-Control-Allow-Origin", "*");
+	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
 		ImageGallery.find(function(err,list){
 			if(!err){
 				res.send(list);
@@ -17,6 +19,8 @@ module.exports = function(app) {
 
 	//GET id - Return an unique element by ID.
 	_findById = function(req,res){
+		res.header("Access-Control-Allow-Origin", "*");
+	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
 		ImageGallery.findById(req.params.id,function(err,element){
 		if(!err){
 			res.send(element);
@@ -29,6 +33,8 @@ module.exports = function(app) {
 
 	//POST - Add a new element in DBs
 	_save = function(req,res){
+		res.header("Access-Control-Allow-Origin", "*");
+	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
 		var body = JSON.parse(req.body.json);
 		var imageGalleryTemp = new ImageGallery({
 			Description: body.Description,
@@ -51,6 +57,8 @@ module.exports = function(app) {
 
 	//PUT - update a register
 	_update = function(req,res){
+		res.header("Access-Control-Allow-Origin", "*");
+	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
 		ImageGallery.findById(req.params.id,function(err,element){
 			var body = JSON.parse(req.body.json);
 			element.Description = body.Description;
@@ -70,6 +78,8 @@ module.exports = function(app) {
 
 	//DELETE - delete an element by id.
 	_delete = function(req,res){
+		res.header("Access-Control-Allow-Origin", "*");
+	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
 		ImageGallery.findById(req.params.id,function(err,element){
 			element.remove(function(err){
 				if(!err){
