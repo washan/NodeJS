@@ -1,14 +1,18 @@
 
-module.exports = function(app) {
+module.exports = function(operators) {
+	var app = operators.app;
+	var db = operators.db;
 
 	var ImageGallery = require('../models/ImageGallery.js');
 	var url = require('url');
 
 	//GET - Return all Elements in DBs
 	_findAll = function(req,res){
+		debugger;
+		var queryString = req.query.queryString;
 		res.header("Access-Control-Allow-Origin", "*");
 	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-		ImageGallery.find(function(err,list){
+		ImageGallery.find({Description:new RegExp(queryString, 'i')},function(err,list){
 			if(!err){
 				res.send(list);
 			}else{
@@ -19,6 +23,7 @@ module.exports = function(app) {
 
 	//GET id - Return an unique element by ID.
 	_findById = function(req,res){
+		debugger;
 		res.header("Access-Control-Allow-Origin", "*");
 	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
 		ImageGallery.findById(req.params.id,function(err,element){
@@ -93,11 +98,60 @@ module.exports = function(app) {
 		});
 	}
 
+	_upload = function(req,res){
+		res.header("Access-Control-Allow-Origin", "*");
+	    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+		debugger;
+	    //console.log(JSON.stringify(req.files));
+
+	    var now = new Date();
+	    var timestamp = '' + now.getFullYear() + now.getMonth() + now.getDate() + now.getHours() + now.getMinutes() + now.getSeconds();
+
+	    var basePath = require('path').dirname(require.main.filename);
+	    var serverPath = basePath + '/public/'+db+'/ImageGallery/' + timestamp + '_' + req.files.myfile.name;
+
+
+	    var destinyPathNormaliced = require('path').normalize(serverPath);
+	    var pathTemp = req.files.myfile.path;
+
+	    require('fs').rename(
+			pathTemp,
+			destinyPathNormaliced,
+			function(err){
+	            if(err){
+					res.send({
+	                    err: 'Ah crap! Something bad happened'
+					});
+	            	return;
+	            }
+	            ImageGallery.findById(req.body.idQuestion,function(err,_question){
+		            if(err){
+		            	res.send({err:'Error Loooking for Question:' + err});
+		            }
+		            _question.Images.push({
+		            	"path": destinyPathNormaliced 
+		            });
+		            _question.save(function(err){
+						if(!err){
+							console.log('file add');
+							res.send({path: destinyPathNormaliced});
+						}else{
+							console.log('ERROR adding File: ' + err);
+							res.send({err:err});
+						}
+					});
+				});
+			}
+	    );
+	}
+
+
 
 	//Union local functions and API functions
 	app.get('/ImageGallery',_findAll);
 	app.get('/ImageGallery/:id',_findById);
 	app.post('/ImageGallery',_save);
+	app.post('/upload',_upload);
 	app.put('/ImageGallery/:id',_update);
 	app.delete('/ImageGallery/:id',_delete);
 
